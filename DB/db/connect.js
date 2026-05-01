@@ -1,15 +1,35 @@
-import { createConnection } from "mysql2";
+import { Sequelize } from "sequelize";
 
-const db = createConnection({
+// إنشاء اتصال مع الداتا بيز (اسم الداتا بيز، اليوزر، الباسورد)
+export const db = new Sequelize("myblog2", "root", "", {
   host: "localhost",
-  user: "root",
-  password: "",
-  database: "myblog",
+  dialect: "mysql",
 });
 
-db.connect((err) => {
-  if (err) return console.log("Database connection error: " + err.message);
-  console.log("Database connected successfully! ✅");
-});
+export const connectDb = async function () {
+  try {
+    await db.authenticate();
+    console.log("Connection has been established successfully. ✅");
+  } catch (error) {
+    console.error("Unable to connect to the database: ❌", error);
+  }
+};
 
-export default db;
+// السطر ده مهم عشان يكريت الجداول أوتوماتيك لو مش موجودة
+await db.sync();
+
+// import { createConnection } from "mysql2";
+
+// const db = createConnection({
+//   host: "localhost",
+//   user: "root",
+//   password: "",
+//   database: "myblog",
+// });
+
+// db.connect((err) => {
+//   if (err) return console.log("Database connection error: " + err.message);
+//   console.log("Database connected successfully! ✅");
+// });
+
+// export default db;

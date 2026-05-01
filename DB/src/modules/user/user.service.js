@@ -1,4 +1,4 @@
-import db from "../../../db/connect.js";
+import { db } from "../../../db/connect.js";
 
 // 1. جلب بيانات مستخدم معين (Get User)
 export const getUserLogic = (req, res) => {
