@@ -21,15 +21,30 @@ export const createBlogLogic = async (req, res) => {
 export const updateBlogLogic = async (req, res) => {
   try {
     const { blog_id } = req.params;
-    const { title, content, UserId } = req.body;
+    const { title, content, UserId } = req.body; // هنا استخرجناهم صح بـ req
+
+    // 1. نتأكد إن الـ User موجود في السيستم أصلاً
     const user = await Person.findByPk(UserId);
     if (!user) return res.status(404).json({ message: "User Not Found" });
+
+    // 2. نجيب البلوج من الداتابيز
     const blog = await Blog.findByPk(blog_id);
     if (!blog) return res.status(404).json({ message: "Blog Not Found" });
-    const updatedBlog = await blog.update(
-      { title, content },
-      { where: { UserId } },
-    );
+
+    // 3. 🛡️ خطوة الأمان السحرية: نتشيك هل هو صاحب البلوج؟
+    // بنقارن الـ UserId المتخزن في البلوج جوه الداتابيز، بالـ UserId اللي مبعوت في الطلب
+    if (blog.UserId !== Number(UserId)) {
+      return res.status(403).json({
+        message: "Unauthorized ❌ You are not the owner of this blog!",
+      });
+    }
+
+    // 4. طالما عدى من الشرط، يبقى هو صاحبها فعلاً، نحدث وإحنا مطمنين
+    const updatedBlog = await blog.update({
+      title,
+      content,
+    });
+
     res
       .status(200)
       .json({ status: "Success", message: "Blog Updated", blog: updatedBlog });
@@ -38,8 +53,56 @@ export const updateBlogLogic = async (req, res) => {
   }
 };
 
-// Blog Creation Logic using SQL Query
+// Get Blog For a Specific User using Sequelize ORM
+// الـ Route بتاعك المفروض يبقى كده: router.get("/blog/:blog_id", getSpecificBlog);
+export const getSpecificBlogLogic = async (req, res) => {
+  try {
+    // 1. بناخد الـ ID من الـ params بشكل أنظف وأسهل في الـ URL
+    const { blog_id } = req.params;
 
+    // 2. بنجيب البلوج مباشرة
+    const blog = await Blog.findByPk(blog_id);
+
+    // 3. لو مش موجودة ارفع كارت أحمر
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found ❌" });
+    }
+
+    // 4. رجع البلوج بسلام
+    res.status(200).json({
+      status: "success",
+      message: "Blog found ✅",
+      blog,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Blog Deletion Logic using Sequelize ORM
+export const deleteBlogLogic = async (req, res) => {
+  try {
+    const { UserId } = req.body;
+    const { blog_id } = req.params;
+    const blog = await Blog.findByPk(blog_id);
+    if (!blog) return res.status(404).json({ message: "Blog Not Found" });
+    const user = await Person.findByPk(UserId);
+    if (!user) return res.status(404).json({ message: "User Not Found" });
+    if (blog.UserId !== Number(UserId)) {
+      return res.status(403).json({
+        message: "Unauthorized ❌ You are not the owner of this blog!",
+      });
+    }
+
+    const deleteBlog = await Blog.destroy({ where: { id: blog_id } });
+    return res
+      .status(200)
+      .json({ status: "Success", message: "Blog Deleted", deleteBlog });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// Without Sequelize ORM (Using SQL Queries)
 // // 1) Blog Creation Logic
 // export const createBlogLogic = (req, res) => {
 //   const { title, body, user_id } = req.body;

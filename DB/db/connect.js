@@ -1,7 +1,7 @@
 import { Sequelize } from "sequelize";
 
 // إنشاء اتصال مع الداتا بيز (اسم الداتا بيز، اليوزر، الباسورد)
-export const db = new Sequelize("myblog2", "root", "", {
+export const db = new Sequelize("myblog3", "root", "", {
   host: "localhost",
   dialect: "mysql",
 });
@@ -16,7 +16,14 @@ export const connectDb = async function () {
 };
 
 // السطر ده مهم عشان يكريت الجداول أوتوماتيك لو مش موجودة
-await db.sync();
+export const syncTable = async function () {
+  try {
+    await db.sync();
+    console.log("All models were synchronized successfully. ✅");
+  } catch (error) {
+    console.error("Error occurred while synchronizing models: ❌", error);
+  }
+};
 
 // import { createConnection } from "mysql2";
 

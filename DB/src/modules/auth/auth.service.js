@@ -6,6 +6,7 @@ export const registerLogic = async (req, res) => {
   try {
     const { first_name, email, password } = req.body;
     const users = await Person.bulkCreate([
+      // array of objects
       { first_name, email, password },
       {
         first_name: "John",
@@ -30,10 +31,10 @@ export const loginLogic = async (req, res) => {
       },
       // instead of writting email: req.body.email, as the key is the same name as the value so benkhtesr
     });
-    if (!user.email === email) {
+    if (user.email !== email) {
       return res.status(401).json({ message: "Invalid email or password ❌" });
     }
-    if (!user.password === password) {
+    if (user.password !== password) {
       return res.status(401).json({ message: "Invalid email or password ❌" });
     }
     res.status(201).json({ msg: "User Logged In Successfully", user });

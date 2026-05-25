@@ -12,7 +12,7 @@ const bootstrap = async (app, express) => {
   await connectDb(); // 1. افتح الاتصال الأول
 
   // 2. السطر ده هو "السر" .. لازم يحصل هنا بعد ما عملنا Import لـ Person فوق
-  await db.sync({ alter: true });
+  await db.sync();
   console.log("Database & tables synced! 🏗️");
 
   // 3. دلوقتي تقدر تضيف بيانات وأنت مطمن إن الجدول متبني
