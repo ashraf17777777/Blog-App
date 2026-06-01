@@ -15,17 +15,8 @@ const bootstrap = async (app, express) => {
   await db.sync();
   console.log("Database & tables synced! 🏗️");
 
-  // 3. دلوقتي تقدر تضيف بيانات وأنت مطمن إن الجدول متبني
-  // try {
-  //   const testBlog = await Blog.create({
-  //     title: "MyFirstBlog",
-  //     content: "This is the content of my first blog post.",
-  //     UserId: 1, // تأكد إن في مستخدم بالـ ID ده موجود
-  //   });
-  //   console.log("Test blog created! �", testBlog.id);
-  // } catch (err) {
-  //   console.log("Blog might already exist, skipping create.", err.message);
-  // }
+  Blog.belongsTo(Person, { foreignKey: "UserId" });
+  Person.hasMany(Blog, { foreignKey: "UserId" });
 
   app.use("/auth", authRouter);
   app.use("/users", userRouter);

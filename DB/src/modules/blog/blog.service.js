@@ -102,6 +102,24 @@ export const deleteBlogLogic = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get All Blogs
+export const getAllBlogsLogic = async (req, res) => {
+  try {
+    // بنقول للـ Sequelize: هات كل البلوجات واعمل Include لموديل الـ Person مع كل بلوج
+    const blogs = await Blog.findAll({
+      include: {
+        model: Person,
+        attributes: ["id", "firstName", "email"], // 🌟 حركة صايعة: بنحدد الحقول اللي عايزينها بس عشان مانرجعش الباسورد!
+      },
+    });
+
+    res.status(200).json({ status: "Success", results: blogs.length, blogs });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Without Sequelize ORM (Using SQL Queries)
 // // 1) Blog Creation Logic
 // export const createBlogLogic = (req, res) => {

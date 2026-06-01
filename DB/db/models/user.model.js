@@ -1,13 +1,9 @@
 import { db } from "../../db/connect.js";
 import { DataTypes } from "sequelize";
-import { Blog } from "./blog.model.js";
 
 export const Person = db.define("User", {
   firstName: {
     field: "first_name",
-    // field ده بيخلي اسم العمود في الداتا بيز يختلف عن اسم الخاصية في الكود
-    // يعني في الكود هنستخدم person.firstName لكن في الداتا بيز العمود هيكون first_name
-    // ده بيخلي الكود أنظف وأسهل في القراءة، وفي نفس الوقت بنحافظ على قواعد تسمية الأعمدة في الداتا بيز
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
@@ -16,35 +12,35 @@ export const Person = db.define("User", {
         msg: "First name must be between 3 and 10 characters long",
       },
       checkName(value) {
-        if (value.toUpperCase() === "admin") {
+        // 🌟 ظبطناها كابيتال عشان تطابق الـ toUpperCase
+        if (value.toUpperCase() === "ADMIN") {
           throw new Error("Name cannot be 'admin'");
         }
       },
     },
     get() {
-      const rawValue = this.getDataValue("first_name");
+      const rawValue = this.getDataValue("firstName");
       return rawValue ? rawValue.toUpperCase() : null;
     },
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: false, // 🌟 دي لوحدها كافية تمنع الـ null من غير زيادة جوه الـ validate
     unique: true,
     validate: {
-      isEmail: true,
-      notNull: true,
-      notEmpty: true,
-      set(value) {
-        this.setDataValue("email", value.toLowerCase());
-        // this هنا بتشير للـ instance الحالي من الـ model، يعني لما نعمل person.setEmail
+      isEmail: {
+        msg: "Please provide a valid email address",
       },
+      notEmpty: true,
+    },
+    set(value) {
+      this.setDataValue("email", value.toLowerCase());
     },
   },
   password: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      notNull: true,
       notEmpty: true,
       len: {
         args: [4, 10],
@@ -62,7 +58,6 @@ export const Person = db.define("User", {
     allowNull: false,
     validate: {
       isDate: true,
-      notNull: true,
     },
     set(value) {
       const dobDate = new Date(value);
@@ -70,9 +65,7 @@ export const Person = db.define("User", {
       const now = new Date();
       const getCurrentYear = now.getFullYear();
       this.setDataValue("age", getCurrentYear - dobYear);
-      this.setDataValue("dob", value); // طالاما عملت setter ومعملتش سيت لل dob هيحصل pause لان استخدمنا الفاليو بتاعت ال dob و مقلناش هتكون ب قد ايه
-      // لما نعمل person.setDob("1990-01-01")، الكود ده هيحسب السن ويخزنه في عمود الـ age كمان
-      // يعني في الداتا بيز هيكون عندنا عمودين: dob و age، والسن هيتحسب أوتوماتيك بناءً على تاريخ الميلاد اللي بندخله
+      this.setDataValue("dob", value);
     },
   },
   age: {
@@ -80,6 +73,3 @@ export const Person = db.define("User", {
     allowNull: false,
   },
 });
-
-Blog.belongsTo(Person);
-Person.hasMany(Blog);

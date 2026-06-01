@@ -1,20 +1,13 @@
 import { db } from "../../../db/connect.js";
-import { Person } from "../../modules/user/user.controller.js";
+import { Person } from "../../../db/models/user.model.js";
 
-// bulkCreate method to create multiple users at once
+// Register logic using Sequelize ORM
+
 export const registerLogic = async (req, res) => {
   try {
-    const { first_name, email, password } = req.body;
-    const users = await Person.bulkCreate([
-      // array of objects
-      { first_name, email, password },
-      {
-        first_name: "John",
-        email: "john@example.com",
-        password: "password123",
-      },
-    ]);
-    res.status(201).json({ message: "Users Created", users });
+    const { firstName, email, password, dob } = req.body;
+    const user = await Person.create({ firstName, email, password, dob });
+    res.status(201).json({ msg: "User Created", user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -24,20 +17,21 @@ export const registerLogic = async (req, res) => {
 export const loginLogic = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await Person.findOne({
-      where: {
-        email,
-        password,
-      },
-      // instead of writting email: req.body.email, as the key is the same name as the value so benkhtesr
-    });
-    if (user.email !== email) {
+
+    // بنعمل السيرش بالإيميل بس، وبلاش الباسورد جوه الـ where عشان نعرف نحدد المشكلة فين
+    const user = await Person.findOne({ where: { email } });
+
+    // 🌟 1. لو الإيميل مش في الداتابيز أصلاً
+    if (!user) {
       return res.status(401).json({ message: "Invalid email or password ❌" });
     }
+
+    // 🌟 2. لو الإيميل موجود بس الباسورد غلط (قدام هتعمل ده بـ bcrypt)
     if (user.password !== password) {
       return res.status(401).json({ message: "Invalid email or password ❌" });
     }
-    res.status(201).json({ msg: "User Logged In Successfully", user });
+
+    res.status(200).json({ msg: "User Logged In Successfully", user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -67,6 +61,25 @@ export const loginLogic = async (req, res) => {
 //   const { first_name, email, password } = req.body;
 //   const user = await Person.create({ first_name, email, password });
 //   res.status(201).json({ msg: "User Created", user });
+// };
+
+// bulkCreate method to create multiple users at once
+// export const registerLogic = async (req, res) => {
+//   try {
+//     const { first_name, email, password } = req.body;
+//     const users = await Person.bulkCreate([
+//       // array of objects
+//       { first_name, email, password },
+//       {
+//         first_name: "John",
+//         email: "john@example.com",
+//         password: "password123",
+//       },
+//     ]);
+//     res.status(201).json({ message: "Users Created", users });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
 // };
 
 //------------------------- old way with SQL queries and no ORM, now we are using Sequelize in auth.service.js ---------------------------------------------------------------

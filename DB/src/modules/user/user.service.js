@@ -1,12 +1,14 @@
 import { db } from "../../../db/connect.js";
 import { Person } from "../../../db/models/user.model.js";
 import { Blog } from "../../../db/models/blog.model.js";
+import { Sequelize } from "sequelize";
+import { Op } from "sequelize";
 
 // Get User
 export const getUserLogic = async (req, res) => {
   try {
-    const { UserId } = req.params;
-    const user = await Person.findByPk(UserId);
+    const { id } = req.params;
+    const user = await Person.findByPk(id);
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json({ message: "User Found", user });
   } catch (error) {
@@ -17,11 +19,11 @@ export const getUserLogic = async (req, res) => {
 // Update User
 export const updateUserLogic = async (req, res) => {
   try {
-    const { UserId } = req.params;
+    const { id } = req.params;
     const { firstName } = req.body;
     if (!firstName)
       return res.status(400).json({ message: "First name is required!" });
-    const user = await Person.findByPk(UserId);
+    const user = await Person.findByPk(id);
     if (!user) return res.status(404).json({ message: "User not found" });
     const updatedUser = await user.update({ firstName });
     res.status(200).json({ message: "User Updated", user: updatedUser });
@@ -34,7 +36,7 @@ export const updateUserLogic = async (req, res) => {
 export const deleteUserLogic = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = Person.findByPk(id);
+    const user = await Person.findByPk(id);
     if (!user) return res.status(404).json({ message: "User not found" });
     const deletedUser = await user.destroy();
     res.status(200).json({ message: "User Deleted", user: deletedUser });
@@ -50,7 +52,7 @@ export const searchUserLogic = async (req, res) => {
     const users = await Person.findAll({
       where: {
         firstName: {
-          [Sequelize.Op.like]: `${firstName}%`,
+          [Op.like]: `${firstName}%`,
         },
       },
     });

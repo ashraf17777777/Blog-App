@@ -10,7 +10,6 @@ export const Blog = db.define(
       validate: {
         notEmpty: true,
         notNull: true,
-        isAlphanumeric: true,
         len: {
           args: [3, 20],
           msg: "Title must be between 3 and 20 characters",
@@ -27,7 +26,7 @@ export const Blog = db.define(
     },
     isDeleted: {
       // ده غير ال deletedAt اللي بيضيفه paranoid، ده حقل خاص بينا بنستخدمه في الكود عشان نحدد إذا البوست محذوف ولا لأ (لما يكون true يعني محذوف)
-      type: dataTypes.BOOLEAN,
+      type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false, // ده بيخلي الحقل ده لازم يكون موجود في كل سجل، ولو ما حطيناش قيمة هياخد القيمة الافتراضية false
     },
